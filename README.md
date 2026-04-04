@@ -1,8 +1,6 @@
 # ACC Adiabatic Relief Tool
 ### Air-Cooled Chiller + Wetted Pad Pre-cooling — Hourly Energy Simulation
 
-**Authored by Claude**
-
 ---
 
 ## What This Tool Does
@@ -14,7 +12,7 @@ BEM software such as IESVE does not natively model this configuration. This tool
 It calculates an air-cooled chiller plant hour by hour across a full year (8,760 hours), using:
 - A real weather file for your site (EnergyPlus `.epw` format)
 - Your actual chiller load profile (exported from IESVE VistaPro)
-- Performance curves from your chiller manufacturer's data
+- Default performance curves or curves from your chiller manufacturer's data
 - An adiabatic pre-cooling model that activates when outdoor temperature exceeds a threshold you set
 
 For every hour it calculates capacity, power, and COP for both **adiabatic mode** (pads active) and a **dry baseline** (pads never active), so you can directly quantify the energy benefit.
@@ -22,6 +20,7 @@ For every hour it calculates capacity, power, and COP for both **adiabatic mode*
 The physics mirrors the IESVE Electric Air-Cooled Chiller model using the same three bi-quadratic performance curves and the same normalisation convention.
 
 This tool is authored by Claude.
+
 ---
 
 ## Before You Start — What You Need
@@ -31,7 +30,7 @@ This tool is authored by Claude.
 | Python 3.10 or later | [python.org/downloads](https://www.python.org/downloads/) |
 | An EnergyPlus weather file (`.epw`) for your site | [climate.onebuilding.org](https://climate.onebuilding.org) |
 | A chiller load export from IESVE VistaPro (`.xlsx`) | See export guide below |
-| Chiller curve coefficients | IES Air-Cooled Chiller Curve Coefficients Spreadsheet (metric) |
+| Chiller curve coefficients | IES Air-Cooled Chiller Curve Coefficients Spreadsheet (metric) for custom curves |
 
 **You do not need to know how to code.** All inputs go in a single plain-text file (`config.py`). The only command you run is one line in a terminal.
 
