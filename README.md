@@ -43,6 +43,7 @@ acc_adiabatic_tool/
 │
 ├── config.py          → You edit this — all inputs live here
 ├── main.py            — Run this to start the simulation
+├── visualize.py       — Run this to generate the interactive dashboard
 │
 ├── epw_reader.py      — Reads the weather file
 ├── psychro.py         — Calculates wet-bulb temperature
@@ -77,7 +78,7 @@ pip install -r requirements.txt
 Or install manually:
 
 ```
-pip install pandas openpyxl numpy
+pip install pandas openpyxl numpy plotly
 ```
 
 On Mac, use `pip3` if `pip` is not found.
@@ -285,6 +286,39 @@ The output CSV has one row per hour (8,760 rows).
 
 ---
 
+## Visualisation
+
+After running the simulation, generate an interactive HTML dashboard:
+
+```
+python visualize.py        # Windows
+python3 visualize.py       # Mac / Linux
+```
+
+This writes `results_dashboard.html` to the same folder as your results CSV. Open it in any browser — no internet connection required after the first load (Plotly is fetched from CDN once).
+
+### What the Dashboard Shows
+
+The dashboard has a sticky toolbar at the top with toggle buttons to show or hide each chart individually. All charts are full-width and fully interactive: zoom, pan, hover for exact values, and click legend items to toggle series on and off.
+
+**Chart 1 — Energy Savings: Calendar Heatmap**
+
+A 365 × 24 grid where each cell represents one hour of the year. Colour encodes hourly energy saving (kWh): light blue at zero, graduating through yellow, orange, and deep red at peak savings. The Y-axis shows month labels; the X-axis shows hour of day. Hover to see the exact date, hour, and saving.
+
+**Chart 2 — COP vs Outdoor Dry-Bulb Temperature**
+
+A scatter of all 8,760 hours plotted as COP against outdoor temperature. Two overlapping point clouds are shown: dry baseline (orange) and adiabatic (blue). Below the activation threshold the clouds coincide; above it the blue cloud pulls upward, showing the COP improvement from pad cooling. A dashed vertical line marks T_SWITCH. Hover to see temperature, COP, date, and hour.
+
+**Chart 3 — Monthly Energy Consumption & Savings**
+
+Grouped bar chart with three bars per month: dry baseline energy (grey), adiabatic energy (blue), and the saving (green). The annual saving percentage is annotated in the top-right corner.
+
+**Chart 4 — Psychrometric Chart: Pad Activation**
+
+All 8,760 hours plotted as dry-bulb vs wet-bulb temperature. Grey points are hours when pads were off; blue points are hours when pads were active. A dotted diagonal line marks the saturation limit (T_wb = T_db). A dashed vertical line marks T_SWITCH. The spread of blue points shows the wet-bulb depression available during active hours. Hover to see temperatures, date, and hour.
+
+---
+
 ## Over-Capacity Handling
 
 Mirrors IESVE behaviour:
@@ -370,6 +404,7 @@ Tests cover psychrometric bounds, curve normalisation, over-capacity clamping, e
 | `pandas` | ≥1.3 | Excel I/O, data manipulation |
 | `openpyxl` | ≥3.0 | Excel engine |
 | `numpy` | ≥1.20 | Numerical array operations |
+| `plotly` | ≥5.0 | Interactive HTML dashboard (`visualize.py`) |
 
 Install: `pip install -r requirements.txt`
 Requires Python 3.10+.
