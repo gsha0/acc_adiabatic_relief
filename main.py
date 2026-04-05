@@ -15,6 +15,7 @@ import time
 import pandas as pd
 
 import config
+from __version__   import __version__
 from epw_reader    import read_epw
 from load_reader   import read_load
 from chiller_model import ChillerModel
@@ -48,7 +49,7 @@ def validate_config():
 
 def print_banner():
     print("=" * 65)
-    print("  ACC Adiabatic Relief Tool")
+    print(f"  ACC Adiabatic Relief Tool v{__version__}")
     print("  Air-Cooled Chiller + Wetted Pad Pre-cooling Simulation")
     print("=" * 65)
 
