@@ -35,11 +35,12 @@ df["adiabatic_active"] = df["adiabatic_active"].astype(str).str.lower() == "true
 
 T_SWITCH = config.T_SWITCH
 
-df["day_of_year"] = (
-    pd.to_datetime(
-        dict(year=2001, month=df["month"].astype(int), day=df["day"].astype(int))
-    ).dt.dayofyear
-)
+df["day_of_year"] = pd.to_datetime(
+    "2000-"
+    + df["month"].astype(int).astype(str).str.zfill(2)
+    + "-"
+    + df["day"].astype(int).astype(str).str.zfill(2)
+).dt.dayofyear
 
 MONTH_ORDER = ["Jan","Feb","Mar","Apr","May","Jun","Jul","Aug","Sep","Oct","Nov","Dec"]
 
@@ -56,7 +57,7 @@ adi_hours = int(df["adiabatic_active"].sum())
 pivot = df.pivot_table(
     index="day_of_year", columns="hour", values="E_saving_kWh", aggfunc="sum"
 )
-pivot = pivot.reindex(index=range(1, 366), columns=range(1, 25), fill_value=0)
+pivot = pivot.reindex(index=range(1, 366), columns=range(0, 24), fill_value=0)
 
 month_starts = [1, 32, 60, 91, 121, 152, 182, 213, 244, 274, 305, 335]
 month_mids   = [s + 15 for s in month_starts]
@@ -231,7 +232,7 @@ fig4.add_trace(go.Scatter(
 ))
 fig4.add_trace(go.Scatter(
     x=[T_SWITCH, T_SWITCH],
-    y=[df["T_wb_C"].min() - 1, df["T_odb_C"].max() + 1],
+    y=[df["T_wb_C"].min() - 1, df["T_wb_C"].max() + 1],
     mode="lines", name=f"T_SWITCH ({T_SWITCH}°C)",
     line=dict(color="black", dash="dash", width=1.5),
     hoverinfo="skip", showlegend=True,
