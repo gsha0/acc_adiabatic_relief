@@ -220,9 +220,12 @@ Set to `0.0` for a fully open outdoor installation with no recirculation.
 
 ```python
 PLR_MIN = 0.10
+COP_MAX = 30
 ```
 
-Hours with PLR below this are flagged with `low_PLR_flag = True` in the output. Diagnostic only — the simulation does not cut off the chiller.
+**PLR_MIN** — hours with PLR below this are flagged with `low_PLR_flag = True` in the output. Diagnostic only — the simulation does not cut off the chiller.
+
+**COP_MAX** — hard upper limit on chiller COP. Applied as an EIR floor (`EIR ≥ 1/COP_MAX`) at the last step of the power calculation. The default of 30 is well above any real air-cooled chiller but prevents physically implausible values from performance curve extrapolation under very favourable conditions (low condenser temperature, low part load).
 
 ---
 
@@ -394,6 +397,7 @@ Stull (2011) empirical formula. RH is back-derived from dry-bulb and dew-point v
 
 ```
 EIR       = EIR_rated × fEIRtt × fEIRpt
+EIR       = max(EIR, 1/COP_MAX)     ← COP upper-limit floor
 COP       = 1 / EIR
 P_chiller = Q_served × EIR          (kW)
 P_plant   = P_chiller × N_chillers  (kW)

@@ -54,9 +54,11 @@ class ChillerModel:
         cap_ftt:     Dict,    # CAP-fCHWT&ECT coefficients
         eir_ftt:     Dict,    # EIR-fCHWT&ECT coefficients
         eir_fpt:     Dict,    # EIR-fPLR&dT coefficients
+        cop_max:     float = 30,  # Hard upper COP limit; stored as EIR floor
     ):
         self.Q_rat     = Q_rat
         self.EIR_rat   = 1.0 / COP_rat
+        self.eir_min   = 1.0 / cop_max  # COP cap expressed as an EIR floor
         self.T_let_rat = T_let_rat
         self.T_odb_rat = T_odb_rat
         self.fan_power = fan_power
@@ -139,6 +141,7 @@ class ChillerModel:
         f_EIRpt = self.eir_partload(PLR, T_let, T_odb_eff)
 
         EIR     = self.EIR_rat * f_EIRtt * f_EIRpt
+        EIR     = max(EIR, self.eir_min)          # enforce COP_MAX upper limit
         COP     = 1.0 / EIR if EIR > 0 else 0.0
         P_total = Q_served * EIR   # Total chiller power (includes fan per IESVE)
 

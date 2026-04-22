@@ -78,3 +78,6 @@ COND_INLET_T_OFFSET = 5.0   # °C  (default 5 °C)
 # --- Operating Limits --------------------------------------------------------
 PLR_MIN     = 0.10      # Minimum stable part-load ratio (flag only, no cutoff)
                         # Hours below this are flagged in output for review.
+COP_MAX     = 30        # Hard upper limit on chiller COP (dimensionless).
+                        # Applied as an EIR floor (EIR >= 1/COP_MAX) at the
+                        # last step of the power calculation.

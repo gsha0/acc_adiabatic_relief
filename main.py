@@ -189,6 +189,7 @@ def main():
         cap_ftt    = config.CAP_FTT,
         eir_ftt    = config.EIR_FTT,
         eir_fpt    = config.EIR_FPT,
+        cop_max    = config.COP_MAX,
     )
 
     # --- Run simulation ------------------------------------------------------
