@@ -200,6 +200,23 @@ T_eff is always floored at T_wb (thermodynamic limit).
 
 ---
 
+### Chiller Plant Environment Parameters
+
+```python
+COND_INLET_T_OFFSET = 5.0   # °C
+```
+
+A fixed temperature offset added to the air temperature at the chiller's condenser coil inlet, to account for semi-enclosed plant rooms where heat rejection exhaust recirculates and mixes with incoming outdoor air.
+
+- **When pads are OFF**: the offset is added to the outdoor dry-bulb temperature.
+- **When pads are ON**: the offset is added to the pad outlet temperature (i.e., the already-cooled air).
+
+The T_SWITCH threshold comparison and the adiabatic depression calculation are not affected — they always operate on raw outdoor air. Only the final temperature entering the chiller performance curves is shifted upward.
+
+Set to `0.0` for a fully open outdoor installation with no recirculation.
+
+---
+
 ### Operating Limits
 
 ```python
@@ -236,7 +253,8 @@ The output CSV has one row per hour (8,760 rows).
 | Column | Description |
 |---|---|
 | `adiabatic_active` | `True` when pads are on (T_odb > T_SWITCH) |
-| `T_odb_eff_C` | Effective condenser inlet temperature after pad depression (°C) |
+| `T_odb_eff_C` | Temperature after pad depression only, before enclosure offset (°C) |
+| `T_chiller_inlet_C` | Actual temperature seen by the chiller — pad outlet plus `COND_INLET_T_OFFSET` (°C) |
 
 ### Plant Load
 
@@ -307,7 +325,7 @@ A 365 × 24 grid where each cell represents one hour of the year. Colour encodes
 
 **Chart 2 — COP vs Outdoor Dry-Bulb Temperature**
 
-A scatter of all 8,760 hours plotted as COP against outdoor temperature. Two overlapping point clouds are shown: dry baseline (orange) and adiabatic (blue). Below the activation threshold the clouds coincide; above it the blue cloud pulls upward, showing the COP improvement from pad cooling. A dashed vertical line marks T_SWITCH. Hover to see temperature, COP, date, and hour.
+A scatter of all 8,760 hours plotted as COP against outdoor temperature. Two overlapping point clouds are shown: dry baseline (orange) and adiabatic (blue). Below the activation threshold the clouds coincide; above it the blue cloud pulls upward, showing the COP improvement from pad cooling. A dashed vertical line marks T_SWITCH. Hover to see outdoor temperature, actual chiller inlet temperature (after pad cooling and enclosure offset), COP, date, and hour.
 
 **Chart 3 — Monthly Energy Consumption & Savings**
 
@@ -315,7 +333,7 @@ Grouped bar chart with three bars per month: dry baseline energy (grey), adiabat
 
 **Chart 4 — Psychrometric Chart: Pad Activation**
 
-All 8,760 hours plotted as dry-bulb vs wet-bulb temperature. Grey points are hours when pads were off; blue points are hours when pads were active. A dotted diagonal line marks the saturation limit (T_wb = T_db). A dashed vertical line marks T_SWITCH. The spread of blue points shows the wet-bulb depression available during active hours. Hover to see temperatures, date, and hour.
+All 8,760 hours plotted as dry-bulb vs wet-bulb temperature. Grey points are hours when pads were off; blue points are hours when pads were active. A dotted diagonal line marks the saturation limit (T_wb = T_db). A dashed vertical line marks T_SWITCH. The spread of blue points shows the wet-bulb depression available during active hours. For pads-ON hours, hover shows both the pad outlet temperature and the final chiller inlet temperature (pad outlet plus enclosure offset).
 
 ---
 
@@ -365,9 +383,9 @@ C_norm is auto-computed so each curve equals 1.0 at rated conditions.
 
 | Curve | x | y |
 |---|---|---|
-| fCAPtt — capacity vs temperature | T_let (°C) | T_odb_eff (°C) |
-| fEIRtt — EIR vs temperature | T_let (°C) | T_odb_eff (°C) |
-| fEIRpt — EIR vs part-load | PLR | T_odb_eff − T_let (°C) |
+| fCAPtt — capacity vs temperature | T_let (°C) | T_chiller_inlet (°C) |
+| fEIRtt — EIR vs temperature | T_let (°C) | T_chiller_inlet (°C) |
+| fEIRpt — EIR vs part-load | PLR | T_chiller_inlet − T_let (°C) |
 
 ### Wet-Bulb Calculation
 

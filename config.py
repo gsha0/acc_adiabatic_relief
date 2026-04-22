@@ -66,6 +66,15 @@ ETA_SAT     = 0.78      # Pad saturation efficiency (0-1).
                         # Typical range: 0.65-0.80.
                         # Source: manufacturer data.
 
+# --- Chiller Plant Environment Parameters ------------------------------------
+# Condenser Coil Inlet Temperature Offset — applied to the temperature at the
+# chiller inlet (after any adiabatic pad cooling) to account for semi-enclosed
+# plant rooms where heat rejection exhaust mixes with incoming air.
+# When pads are OFF this is added to the outdoor dry-bulb;
+# when pads are ON it is added to the pad outlet temperature.
+# Set to 0.0 for a fully open outdoor installation.
+COND_INLET_T_OFFSET = 5.0   # °C  (default 5 °C)
+
 # --- Operating Limits --------------------------------------------------------
 PLR_MIN     = 0.10      # Minimum stable part-load ratio (flag only, no cutoff)
                         # Hours below this are flagged in output for review.

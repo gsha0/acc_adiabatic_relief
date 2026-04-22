@@ -5,6 +5,17 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [0.2.0] - 2026-04-22
+
+### Added
+- `COND_INLET_T_OFFSET` parameter in `config.py` (new *Chiller Plant Environment Parameters* section) — adds a fixed temperature offset (°C, default 5 °C) to the condenser coil inlet temperature to model semi-enclosed plant rooms where heat rejection exhaust recirculates and mixes with outdoor air
+- Offset is applied after adiabatic pad cooling: when pads are off it is added to outdoor dry-bulb; when pads are on it is added to the pad outlet temperature; the T_SWITCH threshold and adiabatic depression calculation remain based on raw outdoor air
+- New output column `T_chiller_inlet_C` — the actual temperature seen by the chiller (after pad cooling and enclosure offset)
+- Dashboard (`visualize.py`) updated to surface the offset:
+  - Header now shows the configured `COND_INLET_T_OFFSET` value alongside T_SWITCH and ETA_SAT
+  - COP scatter (Chart 2) hover tooltip now displays `Chiller inlet` temperature for every point
+  - Psychrometric chart (Chart 4) pads-ON hover tooltip now shows both `Pad outlet` and `Chiller inlet` temperatures, making the two-step temperature modification visible
+
 ## [0.1.0] - 2026-04-05
 
 ### Added

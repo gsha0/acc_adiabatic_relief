@@ -20,21 +20,26 @@ MONTH_NAMES = {
 
 def run(epw: pd.DataFrame, load_kw: np.ndarray, chiller: ChillerModel,
         n_chillers: int, T_switch: float, eta_sat: float,
-        T_let: float, PLR_min: float) -> pd.DataFrame:
+        T_let: float, PLR_min: float,
+        T_cond_offset: float = 0.0) -> pd.DataFrame:
     """
     Main simulation loop.
 
     Parameters
     ----------
-    epw        : DataFrame from epw_reader.read_epw() — 8760 rows
-    load_kw    : array of 8760 hourly total plant load values (kW)
-    chiller    : ChillerModel instance (single unit)
-    n_chillers : number of identical chillers in plant
-    T_switch   : adiabatic activation threshold (°C)
-    eta_sat    : pad saturation efficiency
-    T_let      : design CHW supply temperature — the operating setpoint (°C).
-                 Distinct from the rated value used to normalise the curves.
-    PLR_min    : minimum PLR threshold for flagging (no cutoff applied)
+    epw           : DataFrame from epw_reader.read_epw() — 8760 rows
+    load_kw       : array of 8760 hourly total plant load values (kW)
+    chiller       : ChillerModel instance (single unit)
+    n_chillers    : number of identical chillers in plant
+    T_switch      : adiabatic activation threshold (°C)
+    eta_sat       : pad saturation efficiency
+    T_let         : design CHW supply temperature — the operating setpoint (°C).
+                    Distinct from the rated value used to normalise the curves.
+    PLR_min       : minimum PLR threshold for flagging (no cutoff applied)
+    T_cond_offset : condenser coil inlet temperature offset (°C). Added to the
+                    chiller inlet temperature after any adiabatic pad cooling,
+                    to model semi-enclosed plant rooms where exhaust air
+                    recirculates and raises the effective inlet temperature.
 
     Returns
     -------
@@ -64,6 +69,9 @@ def run(epw: pd.DataFrame, load_kw: np.ndarray, chiller: ChillerModel,
         T_odb_eff, adi_active = effective_odb(T_odb, T_wb, T_switch, eta_sat)
         T_depression = T_odb - T_odb_eff   # Positive when pads active
 
+        # --- Condenser coil inlet temperature (after pads + enclosure offset) -
+        T_chiller_inlet = T_odb_eff + T_cond_offset
+
         # --- Per-chiller demand (load shared equally across N chillers) -------
         Q_chiller_demand = Q_plant_demand / n_chillers
 
@@ -73,10 +81,10 @@ def run(epw: pd.DataFrame, load_kw: np.ndarray, chiller: ChillerModel,
         T_let_h = T_let
 
         # --- Run chiller model (adiabatic mode) -------------------------------
-        res_adi = chiller.run(Q_chiller_demand, T_let_h, T_odb_eff)
+        res_adi = chiller.run(Q_chiller_demand, T_let_h, T_chiller_inlet)
 
-        # --- Run chiller model (dry baseline — same load, raw T_odb) ----------
-        res_dry = chiller.run(Q_chiller_demand, T_let_h, T_odb)
+        # --- Run chiller model (dry baseline — same load, raw T_odb + offset) -
+        res_dry = chiller.run(Q_chiller_demand, T_let_h, T_odb + T_cond_offset)
 
         # --- Scale single-chiller outputs to plant totals --------------------
         def plant(val): return val * n_chillers
@@ -108,6 +116,7 @@ def run(epw: pd.DataFrame, load_kw: np.ndarray, chiller: ChillerModel,
             # Adiabatic state
             "adiabatic_active":    adi_active,
             "T_odb_eff_C":         round(T_odb_eff, 2),
+            "T_chiller_inlet_C":   round(T_chiller_inlet, 2),
 
             # Plant load
             "Q_plant_demand_kW":   round(Q_plant_demand, 1),

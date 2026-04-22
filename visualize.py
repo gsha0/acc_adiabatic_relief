@@ -33,7 +33,8 @@ if not os.path.exists(CSV_PATH):
 df = pd.read_csv(CSV_PATH)
 df["adiabatic_active"] = df["adiabatic_active"].astype(str).str.lower() == "true"
 
-T_SWITCH = config.T_SWITCH
+T_SWITCH          = config.T_SWITCH
+COND_INLET_OFFSET = config.COND_INLET_T_OFFSET
 
 df["day_of_year"] = pd.to_datetime(
     "2000-"
@@ -112,9 +113,10 @@ fig2.add_trace(go.Scatter(
     x=df["T_odb_C"], y=df["COP_dry"],
     mode="markers", name="Dry baseline",
     marker=dict(color="rgba(255,140,0,0.35)", size=4),
-    customdata=df[["month_name", "day", "hour"]].values,
+    customdata=df[["month_name", "day", "hour", "T_chiller_inlet_C"]].values,
     hovertemplate=(
         "T_odb: %{x:.1f} °C<br>"
+        "Chiller inlet: %{customdata[3]:.1f} °C<br>"
         "COP (dry): %{y:.3f}<br>"
         "Day: %{customdata[0]} %{customdata[1]:.0f}, Hour: %{customdata[2]:.0f}<extra></extra>"
     ),
@@ -123,9 +125,10 @@ fig2.add_trace(go.Scatter(
     x=df["T_odb_C"], y=df["COP_adi"],
     mode="markers", name="Adiabatic",
     marker=dict(color="rgba(31,119,180,0.45)", size=4),
-    customdata=df[["month_name", "day", "hour"]].values,
+    customdata=df[["month_name", "day", "hour", "T_chiller_inlet_C"]].values,
     hovertemplate=(
         "T_odb: %{x:.1f} °C<br>"
+        "Chiller inlet: %{customdata[3]:.1f} °C<br>"
         "COP (adiabatic): %{y:.3f}<br>"
         "Day: %{customdata[0]} %{customdata[1]:.0f}, Hour: %{customdata[2]:.0f}<extra></extra>"
     ),
@@ -217,10 +220,12 @@ fig4.add_trace(go.Scatter(
     x=df_adi_pts["T_odb_C"], y=df_adi_pts["T_wb_C"],
     mode="markers", name="Pads ON",
     marker=dict(color="rgba(31,119,180,0.6)", size=5),
-    customdata=df_adi_pts[["month_name", "day", "hour"]].values,
+    customdata=df_adi_pts[["month_name", "day", "hour", "T_odb_eff_C", "T_chiller_inlet_C"]].values,
     hovertemplate=(
         "T_db: %{x:.1f} °C<br>"
         "T_wb: %{y:.1f} °C<br>"
+        "Pad outlet: %{customdata[3]:.1f} °C<br>"
+        "Chiller inlet: %{customdata[4]:.1f} °C<br>"
         "Day: %{customdata[0]} %{customdata[1]:.0f}, Hour: %{customdata[2]:.0f}<extra></extra>"
     ),
 ))
@@ -374,6 +379,7 @@ html = f"""<!DOCTYPE html>
     <span>Adiabatic active: <span class="highlight">{adi_hours:,} hrs/yr</span></span>
     <span>T_SWITCH = {T_SWITCH}°C</span>
     <span>ETA_SAT = {config.ETA_SAT}</span>
+    <span>Cond inlet offset = {COND_INLET_OFFSET:+.1f}°C</span>
     <span>N_CHILLERS = {config.N_CHILLERS}</span>
   </div>
 </header>

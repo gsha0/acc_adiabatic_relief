@@ -67,6 +67,7 @@ def print_inputs():
     print(f"  T_odb rated    : {config.T_ODB_RAT} °C")
     print(f"  T_switch       : {config.T_SWITCH} °C")
     print(f"  Pad η_sat      : {config.ETA_SAT:.0%}")
+    print(f"  Cond inlet off.: {config.COND_INLET_T_OFFSET:+.1f} °C")
 
 
 def print_summary(df: pd.DataFrame):
@@ -150,14 +151,15 @@ def main():
     print("[RUNNING] Hourly simulation (8760 steps)...")
     t0 = time.time()
     df = run(
-        epw        = epw,
-        load_kw    = load_kw,
-        chiller    = chiller,
-        n_chillers = config.N_CHILLERS,
-        T_switch   = config.T_SWITCH,
-        eta_sat    = config.ETA_SAT,
-        T_let      = config.T_LET_DES,
-        PLR_min    = config.PLR_MIN,
+        epw            = epw,
+        load_kw        = load_kw,
+        chiller        = chiller,
+        n_chillers     = config.N_CHILLERS,
+        T_switch       = config.T_SWITCH,
+        eta_sat        = config.ETA_SAT,
+        T_let          = config.T_LET_DES,
+        PLR_min        = config.PLR_MIN,
+        T_cond_offset  = config.COND_INLET_T_OFFSET,
     )
     elapsed = time.time() - t0
     print(f"  Done in {elapsed:.1f}s")
