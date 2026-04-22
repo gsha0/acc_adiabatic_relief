@@ -10,12 +10,16 @@
 
 import sys
 import os
+import csv
 import time
+from datetime import datetime
 
 import pandas as pd
 
 import config
 from __version__   import __version__
+
+_RUN_LOG = "run_log.csv"
 from epw_reader    import read_epw
 from load_reader   import read_load
 from chiller_model import ChillerModel
@@ -70,7 +74,17 @@ def print_inputs():
     print(f"  Cond inlet off.: {config.COND_INLET_T_OFFSET:+.1f} °C")
 
 
-def print_summary(df: pd.DataFrame):
+def _first_dt(row) -> str:
+    return f"{row['month_name']} {int(row['day']):02d} {int(row['hour']):02d}:00"
+
+
+def print_summary(df: pd.DataFrame) -> list[str]:
+    lines: list[str] = []
+
+    def emit(s: str = "") -> None:
+        print(s)
+        lines.append(s)
+
     adi_hrs   = df["adiabatic_active"].sum()
     overcap   = df["over_capacity_flag"].sum()
     low_plr   = df["low_PLR_flag"].sum()
@@ -83,22 +97,39 @@ def print_summary(df: pd.DataFrame):
     Q_served  = df["Q_plant_served_kW"].sum() / 1e3  # MWh cooling
     Q_unmet   = df["Q_plant_unmet_kW"].sum()
 
-    avg_cop_adi = df.loc[df["COP_adi"] > 0, "COP_adi"].mean()
-    avg_cop_dry = df.loc[df["COP_dry"] > 0, "COP_dry"].mean()
+    mask_adi = df["COP_adi"] > 0
+    mask_dry = df["COP_dry"] > 0
 
-    print("\n[ANNUAL SUMMARY]")
-    print(f"  Adiabatic active hours    : {adi_hrs:,} hrs/yr")
-    print(f"  Cooling delivered         : {Q_served:,.1f} MWh")
-    print(f"  Unmet cooling load        : {Q_unmet:,.0f} kWh  "
-          f"({'over-capacity hours: ' + str(overcap)})")
-    print(f"  Energy — adiabatic mode   : {E_adi:,.1f} MWh")
-    print(f"  Energy — dry baseline     : {E_dry:,.1f} MWh")
-    print(f"  Annual energy saving      : {E_saving:,.1f} MWh  ({pct:.1f}%)")
-    print(f"  Avg COP — adiabatic       : {avg_cop_adi:.3f}")
-    print(f"  Avg COP — dry baseline    : {avg_cop_dry:.3f}")
-    print(f"  Low-PLR hours flagged     : {low_plr:,} hrs")
+    avg_cop_adi = df.loc[mask_adi, "COP_adi"].mean()
+    avg_cop_dry = df.loc[mask_dry, "COP_dry"].mean()
 
-    print("\n[MONTHLY ENERGY SAVING (MWh)]")
+    max_cop_adi_val = df.loc[mask_adi, "COP_adi"].max()
+    max_cop_adi_dt  = _first_dt(df[df["COP_adi"] == max_cop_adi_val].iloc[0])
+    min_cop_adi_val = df.loc[mask_adi, "COP_adi"].min()
+    min_cop_adi_dt  = _first_dt(df[df["COP_adi"] == min_cop_adi_val].iloc[0])
+
+    max_cop_dry_val = df.loc[mask_dry, "COP_dry"].max()
+    max_cop_dry_dt  = _first_dt(df[df["COP_dry"] == max_cop_dry_val].iloc[0])
+    min_cop_dry_val = df.loc[mask_dry, "COP_dry"].min()
+    min_cop_dry_dt  = _first_dt(df[df["COP_dry"] == min_cop_dry_val].iloc[0])
+
+    emit("\n[ANNUAL SUMMARY]")
+    emit(f"  Adiabatic active hours    : {adi_hrs:,} hrs/yr")
+    emit(f"  Cooling delivered         : {Q_served:,.1f} MWh")
+    emit(f"  Unmet cooling load        : {Q_unmet:,.0f} kWh  "
+         f"({'over-capacity hours: ' + str(overcap)})")
+    emit(f"  Energy — adiabatic mode   : {E_adi:,.1f} MWh")
+    emit(f"  Energy — dry baseline     : {E_dry:,.1f} MWh")
+    emit(f"  Annual energy saving      : {E_saving:,.1f} MWh  ({pct:.1f}%)")
+    emit(f"  Avg COP — adiabatic       : {avg_cop_adi:.3f}")
+    emit(f"  Max COP — adiabatic       : {max_cop_adi_val:.3f}  ({max_cop_adi_dt})")
+    emit(f"  Min COP — adiabatic       : {min_cop_adi_val:.3f}  ({min_cop_adi_dt})")
+    emit(f"  Avg COP — dry baseline    : {avg_cop_dry:.3f}")
+    emit(f"  Max COP — dry baseline    : {max_cop_dry_val:.3f}  ({max_cop_dry_dt})")
+    emit(f"  Min COP — dry baseline    : {min_cop_dry_val:.3f}  ({min_cop_dry_dt})")
+    emit(f"  Low-PLR hours flagged     : {low_plr:,} hrs")
+
+    emit("\n[MONTHLY ENERGY SAVING (MWh)]")
     monthly = (
         df.groupby("month_name")
           .agg(
@@ -111,12 +142,25 @@ def print_summary(df: pd.DataFrame):
     month_order = ["Jan","Feb","Mar","Apr","May","Jun",
                    "Jul","Aug","Sep","Oct","Nov","Dec"]
     monthly = monthly.reindex([m for m in month_order if m in monthly.index])
-    print(f"  {'Month':<6} {'Adiab(MWh)':>12} {'Dry(MWh)':>10} "
-          f"{'Saving(MWh)':>12} {'Adi hrs':>8}")
-    print("  " + "-"*52)
+    emit(f"  {'Month':<6} {'Adiab(MWh)':>12} {'Dry(MWh)':>10} "
+         f"{'Saving(MWh)':>12} {'Adi hrs':>8}")
+    emit("  " + "-"*52)
     for m, row in monthly.iterrows():
-        print(f"  {m:<6} {row.E_adi_MWh:>12.1f} {row.E_dry_MWh:>10.1f} "
-              f"{row.E_saving_MWh:>12.1f} {int(row.adi_hrs):>8}")
+        emit(f"  {m:<6} {row.E_adi_MWh:>12.1f} {row.E_dry_MWh:>10.1f} "
+             f"{row.E_saving_MWh:>12.1f} {int(row.adi_hrs):>8}")
+
+    return lines
+
+
+def write_run_log(lines: list[str]) -> None:
+    run_dt = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
+    file_exists = os.path.isfile(_RUN_LOG)
+    with open(_RUN_LOG, "a", newline="", encoding="utf-8") as f:
+        writer = csv.writer(f)
+        if not file_exists:
+            writer.writerow(["run_datetime", "line"])
+        for line in lines:
+            writer.writerow([run_dt, line])
 
 
 def main():
@@ -165,12 +209,18 @@ def main():
     print(f"  Done in {elapsed:.1f}s")
 
     # --- Print summary -------------------------------------------------------
-    print_summary(df)
+    summary_lines = print_summary(df)
 
     # --- Write output --------------------------------------------------------
-    print(f"\n[OUTPUT] Writing {config.OUTPUT_FILE}...")
-    df.to_csv(config.OUTPUT_FILE, index=False)
+    output_file = datetime.now().strftime("%Y-%m-%d_hourly_%H%M%S.csv")
+    print(f"\n[OUTPUT] Writing {output_file}...")
+    df.to_csv(output_file, index=False)
     print(f"  OK — {len(df):,} rows × {len(df.columns)} columns")
+
+    print(f"\n[OUTPUT] Appending to {_RUN_LOG}...")
+    write_run_log(summary_lines)
+    print(f"  OK")
+
     print("\nDone.")
 
 

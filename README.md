@@ -56,7 +56,7 @@ acc_adiabatic_tool/
 └── requirements.txt   — Python dependencies list
 ```
 
-Place your `.epw` weather file and `.xlsx` load file in the same folder as `config.py`. Output (`results_hourly.csv`) is written to the same folder.
+Place your `.epw` weather file and `.xlsx` load file in the same folder as `config.py`. Each run writes a timestamped results CSV (`YYYY-MM-DD_hourly_HHMMSS.csv`) and appends a summary entry to `run_log.csv` in the same folder.
 
 ---
 
@@ -124,7 +124,7 @@ python main.py        # Windows
 python3 main.py       # Mac / Linux
 ```
 
-The tool prints progress and an annual/monthly summary to the terminal, then writes `results_hourly.csv`. A typical run takes about 2 seconds.
+The tool prints progress and an annual/monthly summary to the terminal, then writes a timestamped results CSV (`YYYY-MM-DD_hourly_HHMMSS.csv`) and appends the summary to `run_log.csv`. A typical run takes about 2 seconds.
 
 ---
 
@@ -133,12 +133,11 @@ The tool prints progress and an annual/monthly summary to the terminal, then wri
 ### File Paths
 
 ```python
-EPW_FILE    = "AUS_NSW_Sydney_947670_IWEC.epw"
-LOAD_FILE   = "Example_Chiller_Load.xlsx"
-OUTPUT_FILE = "results_hourly.csv"
+EPW_FILE  = "AUS_NSW_Sydney_947670_IWEC.epw"
+LOAD_FILE = "Example_Chiller_Load.xlsx"
 ```
 
-Change the file names to match what you have. Files must be in the same folder as `config.py`.
+Change the file names to match what you have. Files must be in the same folder as `config.py`. The output results CSV is named automatically as `YYYY-MM-DD_hourly_HHMMSS.csv` based on the time of the run.
 
 ---
 

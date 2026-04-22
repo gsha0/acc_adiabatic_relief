@@ -9,7 +9,7 @@ LOAD_FILE   = "Example_Chiller_Load.xlsx"         # IESVE VistaPro export (kW)
 OUTPUT_FILE = "results_hourly.csv"                # Output CSV path
 
 # --- Plant Configuration -----------------------------------------------------
-N_CHILLERS  = 33        # Number of identical chillers in the plant
+N_CHILLERS  = 1        # Number of identical chillers in the plant
 
 # --- Chiller Rated Parameters ------------------------------------------------
 # Copy from the "VE Data Inputs" sheet of the IES ACC coefficients spreadsheet

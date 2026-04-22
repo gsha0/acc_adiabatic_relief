@@ -5,6 +5,13 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [0.3.0] - 2026-04-22
+
+### Added
+- Annual summary now shows Max and Min COP for both adiabatic and dry modes, each followed by the first hour the value occurred in parentheses (e.g. `Jun 15 14:00`)
+- Output CSV filename is now timestamped (`YYYY-MM-DD_hourly_HHMMSS.csv`) so successive runs never overwrite each other
+- Append-only run log (`run_log.csv`) written alongside the results CSV — captures the full annual and monthly summary for every run, with a `run_datetime` column (`YYYY-MM-DD HH:MM:SS`) to identify each run; the file is never overwritten, only appended to
+
 ## [0.2.0] - 2026-04-22
 
 ### Added
