@@ -54,7 +54,8 @@ class ChillerModel:
         cap_ftt:     Dict,    # CAP-fCHWT&ECT coefficients
         eir_ftt:     Dict,    # EIR-fCHWT&ECT coefficients
         eir_fpt:     Dict,    # EIR-fPLR&dT coefficients
-        cop_max:     float = 30,  # Hard upper COP limit; stored as EIR floor
+        cop_max:      float = 30,  # Hard upper COP limit; stored as EIR floor
+        plr_min_calc: float = 0.0, # Min PLR for EIR part-load curve evaluation
     ):
         self.Q_rat     = Q_rat
         self.EIR_rat   = 1.0 / COP_rat
@@ -64,7 +65,8 @@ class ChillerModel:
         self.fan_power = fan_power
         self.cap_ftt   = cap_ftt
         self.eir_ftt   = eir_ftt
-        self.eir_fpt   = eir_fpt
+        self.eir_fpt      = eir_fpt
+        self.plr_min_calc = plr_min_calc
 
         # Pre-compute C_norm for each curve at rated conditions
         self._cnorm_cap = _cnorm(cap_ftt, T_let_rat, T_odb_rat)
@@ -137,8 +139,9 @@ class ChillerModel:
         Q_served = min(Q_demand, Q_cap)
         Q_unmet  = max(0.0, Q_demand - Q_cap)
         PLR      = Q_served / Q_cap  # Always 0 < PLR <= 1.0
+        PLR_calc = max(PLR, self.plr_min_calc)  # floor for curve evaluation only
         f_EIRtt = self.eir_temp(T_let, T_odb_eff)
-        f_EIRpt = self.eir_partload(PLR, T_let, T_odb_eff)
+        f_EIRpt = self.eir_partload(PLR_calc, T_let, T_odb_eff)
 
         EIR     = self.EIR_rat * f_EIRtt * f_EIRpt
         EIR     = max(EIR, self.eir_min)          # enforce COP_MAX upper limit

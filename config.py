@@ -5,11 +5,18 @@
 
 # --- File Paths --------------------------------------------------------------
 EPW_FILE    = "AUS_NSW_Horsley.Equestrian.Centre.947600_TMYx.2011-2025.epw"   # EnergyPlus weather file
-LOAD_FILE   = "Example_Chiller_Load.xlsx"         # IESVE VistaPro export (kW)
+LOAD_FILE   = "ODC_25pct.xlsx"         # IESVE VistaPro export (kW)
 OUTPUT_FILE = "results_hourly.csv"                # Output CSV path
 
 # --- Plant Configuration -----------------------------------------------------
-N_CHILLERS  = 1        # Number of identical chillers in the plant
+N_CHILLERS  = 9        # Number of identical chillers in the plant
+
+# --- Chiller Plant Config Examples -------------------------------------------
+# N=33 when DC Load = 90%-100%
+# N=25 when DC Load = 75%
+# N=17 when DC Load = 50%
+# N=9 when DC Load = 25%
+# Note: the number of chillers is a user input that can be adjusted to simulate different plant configurations, representing staging to match #part load conditions.
 
 # --- Chiller Rated Parameters ------------------------------------------------
 # Copy from the "VE Data Inputs" sheet of the IES ACC coefficients spreadsheet
@@ -78,6 +85,10 @@ COND_INLET_T_OFFSET = 5.0   # °C  (default 5 °C)
 # --- Operating Limits --------------------------------------------------------
 PLR_MIN     = 0.10      # Minimum stable part-load ratio (flag only, no cutoff)
                         # Hours below this are flagged in output for review.
+PLR_MIN_CALC = 0.80     # Minimum PLR used in EIR part-load curve evaluation.
+                        # When actual PLR < PLR_MIN_CALC (and chiller is on),
+                        # the curve is evaluated at PLR_MIN_CALC instead,
+                        # modelling minimum stable-load power draw.
 COP_MAX     = 30        # Hard upper limit on chiller COP (dimensionless).
                         # Applied as an EIR floor (EIR >= 1/COP_MAX) at the
                         # last step of the power calculation.

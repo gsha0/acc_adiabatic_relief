@@ -5,6 +5,13 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [0.5.0] - 2026-04-23
+
+### Added
+- `PLR_MIN_CALC` parameter in `config.py` (Operating Limits section) — minimum PLR used when evaluating the EIR part-load curve (`fEIRpt`), default 0.30. When the actual PLR is below this value (and the chiller is on), the curve is evaluated at `PLR_MIN_CALC` instead, modelling the efficiency penalty of minimum stable-load cycling. The actual PLR recorded in the output is unaffected — only the power calculation is modified.
+- `plr_min_calc` argument added to `ChillerModel.__init__` (default `0.0` for backward compatibility).
+- `Min PLR (calc)` shown in the `[INPUTS]` console output at startup.
+
 ## [0.4.0] - 2026-04-22
 
 ### Added

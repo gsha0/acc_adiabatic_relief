@@ -72,6 +72,7 @@ def print_inputs():
     print(f"  T_switch       : {config.T_SWITCH} °C")
     print(f"  Pad η_sat      : {config.ETA_SAT:.0%}")
     print(f"  Cond inlet off.: {config.COND_INLET_T_OFFSET:+.1f} °C")
+    print(f"  Min PLR (calc) : {config.PLR_MIN_CALC}")
 
 
 def _first_dt(row) -> str:
@@ -189,7 +190,8 @@ def main():
         cap_ftt    = config.CAP_FTT,
         eir_ftt    = config.EIR_FTT,
         eir_fpt    = config.EIR_FPT,
-        cop_max    = config.COP_MAX,
+        cop_max      = config.COP_MAX,
+        plr_min_calc = config.PLR_MIN_CALC,
     )
 
     # --- Run simulation ------------------------------------------------------

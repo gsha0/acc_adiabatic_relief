@@ -219,11 +219,14 @@ Set to `0.0` for a fully open outdoor installation with no recirculation.
 ### Operating Limits
 
 ```python
-PLR_MIN = 0.10
-COP_MAX = 30
+PLR_MIN      = 0.10
+PLR_MIN_CALC = 0.30
+COP_MAX      = 30
 ```
 
-**PLR_MIN** — hours with PLR below this are flagged with `low_PLR_flag = True` in the output. Diagnostic only — the simulation does not cut off the chiller.
+**PLR_MIN** — hours with PLR below this are flagged with `low_PLR_flag = True` in the output. Diagnostic only — the simulation does not cut off the chiller or affect any calculation.
+
+**PLR_MIN_CALC** — minimum PLR used when evaluating the EIR part-load curve (`fEIRpt`). Real chillers cannot operate stably at arbitrarily low part loads — below a minimum stable load they cycle on and off rather than modulating smoothly. When the actual PLR is below `PLR_MIN_CALC` (and the chiller is on), the curve is evaluated at `PLR_MIN_CALC` instead, so the calculated power reflects operation at the minimum stable load rather than unrealistically efficient low-load operation. The actual PLR recorded in the output CSV is the true value and is unaffected. Set to `0.0` to disable this floor entirely.
 
 **COP_MAX** — hard upper limit on chiller COP. Applied as an EIR floor (`EIR ≥ 1/COP_MAX`) at the last step of the power calculation. The default of 30 is well above any real air-cooled chiller but prevents physically implausible values from performance curve extrapolation under very favourable conditions (low condenser temperature, low part load).
 
@@ -396,7 +399,8 @@ Stull (2011) empirical formula. RH is back-derived from dry-bulb and dew-point v
 ### Power Calculation
 
 ```
-EIR       = EIR_rated × fEIRtt × fEIRpt
+PLR_calc  = max(PLR, PLR_MIN_CALC)  ← minimum stable-load floor (curve input only)
+EIR       = EIR_rated × fEIRtt × fEIRpt(PLR_calc)
 EIR       = max(EIR, 1/COP_MAX)     ← COP upper-limit floor
 COP       = 1 / EIR
 P_chiller = Q_served × EIR          (kW)
