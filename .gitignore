@@ -17,6 +17,7 @@ results_dashboard.html
 # Data files (if you don't want to version your weather/load files)
 *.epw
 *.xlsx
+!ACC_Adiabatic_Relief.xlsx
 
 # macOS
 .DS_Store
